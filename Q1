@@ -1,0 +1,474 @@
+#Stat Project #1;
+  #R Code for Question 1:  
+rm(list=ls(all=TRUE))
+setwd("C:/Users/markb/Desktop/Stats")
+library(tis)
+library(MASS)
+library(fitdistrplus)
+library(Quandl)
+
+
+#Gathering Data and Extracting Values;
+
+#S&P
+SP <- Quandl("YAHOO/INDEX_GSPC", api_key="EJxU4jq2CT12yxGjqkb6", collapse = "monthly")
+sp.ac<-SP$`Adjusted Close`
+
+#Three Month TBill;
+three_TB<-data.frame(Quandl("FRED/DTB3", api_key="EJxU4jq2CT12yxGjqkb6", collapse="monthly", end_date="2016-10-03"))
+thm.tb <-three_TB$VALUE
+
+#Tbill Yield Spread;
+ten_TB<-Quandl("FED/RIFLGFCY10_N_M", api_key="EJxU4jq2CT12yxGjqkb6", collapse="monthly")
+three_TB<-data.frame(Quandl("FRED/DTB3", api_key="EJxU4jq2CT12yxGjqkb6", collapse="monthly"))
+names(three_TB)<-c("Date", "Three_Value")
+yield.dat<-merge(ten_TB, three_TB, by="Date")
+yield<-yield.dat$Value-yield.dat$Three_Value
+
+#BOJ IR;
+boj_DR<-Quandl("BOJ/BJMADR1ZATD", api_key="EJxU4jq2CT12yxGjqkb6", collapse="monthly")
+boj.val<-boj_DR$Value
+
+#S&P Evaluation:
+
+#Histogram of S&P Values and Density Curve
+truehist(sp.ac,col="skyblue3",ylab="Counts",xlab="Values",main="Histogram of S&P Values")
+lines(density(sp.ac),lwd=2,col="red3")
+legend(1500,0.0025,  c("Histogram", "Density"),fill=c("skyblue3","red3"),cex=1)
+
+# S&P Evaluation of minimum AIC;
+fw <- fitdist(sp.ac, "weibull")
+summary(fw) #11518.95
+fln <- fitdist(sp.ac, "lnorm")
+summary(fln) #11448.85
+fnorm<-fitdist(sp.ac, "norm")
+summary(fnorm) #12491.44
+fg<-fitdist(sp.ac,"gamma")
+
+#Based off AIC scores Weibull and Log Normal will be graphically compared;
+
+#Graphical Evaluation of Weibull and Log Normal Density Functions;
+par(mfrow = c(2, 2))
+plot.legend <- c("Weibull", "lognormal")
+denscomp(list(fw, fln), legendtext = plot.legend)
+qqcomp(list(fw, fln), legendtext = plot.legend)
+cdfcomp(list(fw, fln), legendtext = plot.legend)
+ppcomp(list(fw, fln), legendtext = plot.legend)
+
+#3 Month Tbill Evaluation;
+
+# Three Month Tbill Histogram and Density Curve;
+truehist(thm.tb,col="skyblue3",ylab="Counts",xlab="Values",main="Three Month Tbill Evaluation")
+lines(density(thm.tb),lwd=2,col="red3")
+legend(9,0.15,  c("Histogram", "Density"),fill=c("skyblue3","red3"),cex=1)
+
+# 3 Month Tbill Evaluation of Minimum AIC;
+fw <- fitdist(thm.tb, "weibull")
+summary(fw)
+fln <- fitdist(thm.tb, "lnorm")
+summary(fln) 
+funif<-fitdist(thm.tb, "unif")
+fnorm<-fitdist(thm.tb, "norm")
+summary(fnorm)
+fg <- fitdist(thm.tb, "gamma");
+summary(fg) s
+fexp<-fitdist(thm.tb, "exp");
+summary(fexp); 
+#Can only Fit Normal and Uniform Due to negative Values;
+
+
+#Graphical Evaluation of 3 Month Tbill Density Functions Uniform and Normal;
+par(mfrow = c(2, 2))
+plot.legend <- c("Normal", "Uniform")
+denscomp(list(fnorm, funif), legendtext = plot.legend)
+qqcomp(list(fnorm, funif), legendtext = plot.legend)
+cdfcomp(list(fnorm, funif), legendtext = plot.legend)
+ppcomp(list(fnorm, funif), legendtext = plot.legend)
+
+#Betwwen the 2 Normal definetly looks Best;
+
+
+#Yeild Spread Evaluation;
+
+#Yield Histogram and Density Curve
+truehist(yield,col="skyblue3",ylab="Counts",xlab="Values",main="Histogram of TBill Yield Spread")
+lines(density(yield),lwd=2,col="red3")
+legend(2.5,0.25,  c("Histogram", "Density"),fill=c("skyblue3","red3"),cex=1)
+
+#Potential Distribution Functions;
+fw <- fitdist(yield, "weibull")
+summary(fw)
+fg <- fitdist(yield, "gamma")
+summary(fg)
+fln <- fitdist(yield, "lnorm")
+summary(fln)
+fnorm<-fitdist(yield, "norm")
+summary(fnorm) 
+fexp<-fitdist(yield, "exp")
+summary(fexp)
+funif<-fitdist(yield, "unif")
+summary(funif)
+
+
+#Can Only Fit Normal and Uniform due to negative Values;
+par(mfrow = c(2, 2))
+plot.legend <- c("Normal", "Uniform")
+denscomp(list(fnorm, funif), legendtext = plot.legend)
+qqcomp(list(fnorm, funif), legendtext = plot.legend)
+cdfcomp(list(fnorm, funif), legendtext = plot.legend)
+ppcomp(list(fnorm, funif), legendtext = plot.legend)
+#Again appears to most closely resemble normal distribution;
+
+#Boj Evaluation;
+
+#Boj Histogram and Density Curve;
+truehist(boj.val,col="skyblue3",ylab="Counts",xlab="Values",main="Historgram of BOJ Interest Rates")
+lines(density(boj.val),lwd=2,col="red3")
+legend(6,0.29,  c("Histogram", "Density"),fill=c("skyblue3","red3"),cex=1)
+
+fw <- fitdist(boj.val, "weibull")
+summary(fw) #5573
+fln <- fitdist(boj.val, "lnorm")
+summary(fln) #6118
+fnorm<-fitdist(boj.val, "norm")
+summary(fnorm) #5511 
+fg <- fitdist(boj.val, "gamma");
+summary(fg) #5645
+fexp<-fitdist(boj.val, "exp");
+summary(fexp);  #5672
+#Based off AIC, Graphically Evaluate Weibull & Normal;
+
+#Plot Evaluation of Distribution Functions;
+par(mfrow = c(2, 2))
+plot.legend <- c("Weibull", "normal")
+denscomp(list(fw, fnorm), legendtext = plot.legend)
+qqcomp(list(fw, fnorm), legendtext = plot.legend)
+cdfcomp(list(fw, fnorm), legendtext = plot.legend)
+ppcomp(list(fw, fnorm), legendtext = plot.legend)
+
+
+########
+#Subsetting Data;
+#Dates of U.S. Recession as Defined by NBER:
+#always include end points
+#dec 1969 - nov 1970:  
+#nov 73 - march 75:
+#jan 80 - july 80:
+#july 81 - nov 82:
+#july 1990- march 1991
+#march 2001- nov 2001
+#dec 2007-jun 2009;
+
+#Subsetting Data;
+#Recession Years
+rec.sp<-subset(SP, Date > as.Date("1969-12-01") & Date < as.Date("1970-11-30") | Date > as.Date("1973-11-01") & Date < as.Date("1975-03-30") | Date > as.Date("1980-01-01") & Date < as.Date("1980-07-30") | Date > as.Date("1981-07-01") & Date < as.Date("1982-11-30") | Date > as.Date("1990-07-01") & Date < as.Date("1991-03-30") | Date > as.Date("2001-03-01") & Date < as.Date("2001-11-30") | Date > as.Date("2007-12-01")& Date < as.Date("2009-07-30"))
+rec.thm.tb<-subset(three_TB, Date> as.Date("1969-12-01") & Date < as.Date("1970-11-30") | Date > as.Date("1973-11-01") & Date < as.Date("1975-03-30") | Date > as.Date("1980-01-01") & Date < as.Date("1980-07-30") |Date > as.Date("1981-07-01") & Date < as.Date("1982-11-30") | Date > as.Date("1990-07-01") & Date < as.Date("1991-03-30") | Date > as.Date("2001-03-01") & Date < as.Date("2001-11-30") | Date > as.Date("2007-12-01")& Date < as.Date("2009-07-30"))
+rec.yield<-subset(yield.dat, Date > as.Date("1969-12-01") & Date < as.Date("1970-11-30") | Date > as.Date("1973-11-01") & Date < as.Date("1975-03-30") | Date > as.Date("1980-01-01") & Date < as.Date("1980-07-30") | Date > as.Date("1981-07-01") & Date < as.Date("1982-11-30") | Date > as.Date("1990-07-01") & Date < as.Date("1991-03-30") | Date > as.Date("2001-03-01") & Date < as.Date("2001-11-30") | Date > as.Date("2007-12-01")& Date < as.Date("2009-07-30"))
+
+#Getting Growth Years
+rc.1<- SP$Date > as.Date("1969-12-01") & SP$Date < as.Date("1970-11-30") | SP$Date > as.Date("1973-11-01") & SP$Date < as.Date("1975-03-30") | SP$Date > as.Date("1980-01-01") & SP$Date < as.Date("1980-07-30") |SP$Date > as.Date("1981-07-01") & SP$Date < as.Date("1982-11-30") | SP$Date > as.Date("1990-07-01") & SP$Date < as.Date("1991-03-30") | SP$Date > as.Date("2001-03-01") & SP$Date < as.Date("2001-11-30") | SP$Date > as.Date("2007-12-01")& SP$Date < as.Date("2009-07-30")
+rc.2<-three_TB$Date> as.Date("1969-12-01") & three_TB$Date < as.Date("1970-11-30") | three_TB$Date > as.Date("1973-11-01") &three_TB$Date < as.Date("1975-03-30") | three_TB$Date > as.Date("1980-01-01") & three_TB$Date < as.Date("1980-07-30") |three_TB$Date > as.Date("1981-07-01") & three_TB$Date < as.Date("1982-11-30") | three_TB$Date > as.Date("1990-07-01") & three_TB$Date < as.Date("1991-03-30") | three_TB$Date > as.Date("2001-03-01") & three_TB$Date < as.Date("2001-11-30") | three_TB$Date > as.Date("2007-12-01")& three_TB$Date < as.Date("2009-07-30") 
+rc.3<-yield.dat$Date > as.Date("1969-12-01") & yield.dat$Date < as.Date("1970-11-30") | yield.dat$Date > as.Date("1973-11-01") & yield.dat$Date < as.Date("1975-03-30") | yield.dat$Date > as.Date("1980-01-01") & yield.dat$Date < as.Date("1980-07-30") |yield.dat$Date > as.Date("1981-07-01") & yield.dat$Date < as.Date("1982-11-30") | yield.dat$Date > as.Date("1990-07-01") & yield.dat$Date < as.Date("1991-03-30") | yield.dat$Date > as.Date("2001-03-01") & yield.dat$Date < as.Date("2001-11-30") | yield.dat$Date > as.Date("2007-12-01")& yield.dat$Date < as.Date("2009-07-30")
+# S&P Growth Periods
+sp.g<-cbind(SP,rc.1)
+g.sp<-subset(sp.g, rc.1==FALSE)
+G.sp<-g.sp$`Adjusted Close`
+# Three Month Tbill Growth Periods
+tb3.g<-cbind(three_TB, rc.2)
+g.tb<-subset(tb3.g, rc.2==FALSE)
+G.tb=g.tb$Three_Value
+#Yield Growth Periods
+yld.g<-cbind(yield.dat,rc.3)
+g.yld<-subset(yld.g,rc.3==FALSE)
+G.yld<-g.yld$Value-g.yld$Three_Value
+  
+  
+  
+
+#Japan Recession Dates;
+#Based On OECD Indicators from the peak through the period preceding the Trough;
+#Japan in Recession From;
+#May 1964- Sept 30 1964
+#May 1970- Sept 30 1971
+#April 1972 - Jan 1975
+# July 1979- Apil 30 1980
+#March 1982 - April 30 1983
+#Sept 1985 - Jan 30 1987
+#Aug 1990 - Sept 30 1993
+#Feb 1997 - May 30 1999
+#Feb 2001 - Dec 30 2001
+#March 2004 - Dec 30 2004
+#March 2008 - March 30 2009
+#September 2010-Sept 30 2012
+
+
+
+#Subsetting BOJ Growth;
+rc.b0j<-boj_DR$Date > as.Date("1964-05-01") & boj_DR$Date < as.Date("1964-09-30") | boj_DR$Date > as.Date("1970-05-01") & boj_DR$Date < as.Date("1971-09-30") |boj_DR$Date > as.Date("1972-04-01") & boj_DR$Date < as.Date("1975-01-31") |boj_DR$Date > as.Date("1979-01-01") & boj_DR$Date < as.Date("1980-04-30") |boj_DR$Date > as.Date("1982-03-01") & boj_DR$Date < as.Date("1983-04-30") | boj_DR$Date > as.Date("1985-09-01") & boj_DR$Date < as.Date("1987-01-31") | boj_DR$Date > as.Date("1990-08-01")& boj_DR$Date < as.Date("1993-09-30") | boj_DR$Date > as.Date("1997-02-01") & boj_DR$Date < as.Date("1999-05-31") | boj_DR$Date > as.Date("2001-02-01") & boj_DR$Date < as.Date("2001-12-31")| boj_DR$Date > as.Date("2004-04-01") & boj_DR$Date < as.Date("2004-12-31") | boj_DR$Date > as.Date("2008-04-01") & boj_DR$Date < as.Date("2009-03-31")|boj_DR$Date > as.Date("2010-09-01") & boj_DR$Date < as.Date("2012-09-30")|boj_DR$Date > as.Date("2014-01-01") & boj_DR$Date < as.Date("2014-09-30")
+boj.g<-cbind(boj_DR, rc.b0j)
+g.boj<-subset(boj.g, rc.b0j==FALSE)
+G.boj<-g.boj$Value
+
+
+#Begining Evaluation of Variables During The Recession;
+
+
+  # S&P During the Recession;
+rec.SP <-rec.sp$`Adjusted Close`
+#S&P Histogram and Denisty Curve During recession Years;
+truehist(rec.SP,col="skyblue3",ylab="Counts",xlab="Values",main="S&P 500 During Recession Years")
+lines(density(rec.SP),lwd=2,col="red3")
+legend(1040,0.0014,  c("Histogram", "Density"),fill=c("skyblue3","red3"),cex=1)
+
+  #Evaluating Minimum AIC;
+fw <- fitdist(rec.SP, "weibull")
+summary(fw) #Aic = 1197
+fln <- fitdist(rec.SP, "lnorm")
+summary(fln) #1182
+fnorm<-fitdist(rec.SP, "norm")
+summary(fnorm) #1281
+fg<-fitdist(rec.SP, "gamma")
+summary(fg)
+
+
+
+  #Based off AIC values Log normal and weiball distribution will be Graphically evaluated; 
+par(mfrow = c(2, 2))
+plot.legend <- c("Weibull", "lognormal")
+denscomp(list(fw, fln), legendtext = plot.legend)
+qqcomp(list(fw, fln), legendtext = plot.legend)
+cdfcomp(list(fw, fln), legendtext = plot.legend)
+ppcomp(list(fw, fln), legendtext = plot.legend)
+#Both look very bad, lognormal is "best based off AIC;
+
+
+# Three month Tbills During Recession;
+rec.3tb<-rec.thm.tb$Three_Value
+  #Histogram and Denisty Curve of Three Month Tbill During Recession Years
+truehist(rec.3tb,col="skyblue3",ylab="Counts",xlab="Values",main="Three Month Treasury Bills During Recession Years")
+lines(density(rec.3tb),lwd=2,col="red3")
+legend(14,0.099,  c("Histogram", "Density"),fill=c("skyblue3","red3"),cex=1)
+
+  #Evaluating Minimum AIC
+fw <- fitdist(rec.3tb, "weibull")
+summary(fw) 
+fw$AIC
+fln <- fitdist(rec.3tb, "lnorm")
+summary(fln)  
+fnorm<-fitdist(rec.3tb, "norm")
+summary(fnorm) 
+fg<-fitdist(rec.3tb, "gamma")
+summary(fg) 
+fexp<-fitdist(rec.3tb, "exp")
+summary(fexp) 
+
+  #Based off AIC scores Weibull and Normal Distributions will be graphically evaluated;
+par(mfrow = c(2, 2))
+plot.legend <- c("Weibull", "Normal")
+denscomp(list(fw, fnorm), legendtext = plot.legend)
+qqcomp(list(fw, fnorm), legendtext = plot.legend)
+cdfcomp(list(fw, fnorm), legendtext = plot.legend)
+ppcomp(list(fw, fnorm), legendtext = plot.legend)
+
+#both are bad, visually Weibulll looks better 
+
+#Evaluation of BOJ IR During Japanese Recession Years;
+
+  #Histogram and Density Curve of BOJ IR during reccession years;
+truehist(rec.BOJ,col="skyblue3",ylab="Counts",xlab="Values",main="BOJ Interest Rates During Recession Years")
+lines(density(rec.BOJ),lwd=2,col="red3")
+legend(6.7,0.233,  c("Histogram", "Density"),fill=c("skyblue3","red3"),cex=1)
+
+  #Evaluation of Minimum AIC;
+fw <- fitdist(rec.BOJ, "weibull")
+summary(fw) #986.4 
+fln <- fitdist(rec.BOJ, "lnorm")
+summary(fln)  #1023.922
+fnorm<-fitdist(rec.BOJ, "norm")
+summary(fnorm) #1086
+fg<-fitdist(rec.BOJ, "gamma")
+summary(fg) #984
+fexp<-fitdist(rec.BOJ, "exp")
+summary(fexp) #985
+
+  #Based of AIC Exponential and Gamma Appear Best;
+par(mfrow = c(2, 2))
+plot.legend <- c("Weibull", "Exponential")
+denscomp(list(fw, fexp), legendtext = plot.legend)
+qqcomp(list(fw, fexp), legendtext = plot.legend)
+cdfcomp(list(fw, fexp), legendtext = plot.legend)
+ppcomp(list(fw, fexp), legendtext = plot.legend)
+#Both are bad and almost identical
+
+
+#Evaluation of Tbill Yield during recession;
+yld.rec<-rec.yield$Value-rec.yield$Three_Value
+
+  #Histogram and Density Curve of Tbill Yield During Reccession Years;
+truehist(yld.rec,col="skyblue3",ylab="Counts",xlab="Values",main="Treasury Bill Yield Spread During Recession Years")
+lines(density(yld.rec),lwd=2,col="red3")
+legend(3,0.35,  c("Histogram", "Density"),fill=c("skyblue3","red3"),cex=1)
+
+  #Evaluation of Minimum AIC;
+fw <- fitdist(yld.rec, "weibull")
+summary(fw) 
+fln <- fitdist(yld.rec, "lnorm")
+summary(fln)  
+fnorm<-fitdist(yld.rec, "norm")
+summary(fnorm) 
+funif<-fitdist(yld.rec, "unif")
+summary(funif) 
+
+#Can only fit uniform and normal due to negative values;
+par(mfrow = c(2, 2))
+plot.legend <- c("Normall", "Uniform")
+denscomp(list(fnorm, funif), legendtext = plot.legend)
+qqcomp(list(fnorm, funif), legendtext = plot.legend)
+cdfcomp(list(fnorm, funif), legendtext = plot.legend)
+ppcomp(list(fnorm, funif), legendtext = plot.legend)
+#Normal appears Best;
+
+
+
+  #Extracting Values;
+G.sp<-g.sp$`Adjusted Close`
+G.boj<-g.boj$Value
+G.tb<-g.tb$Value
+G.yld<-g.yld$Value-g.yld$Three_Value
+
+length(G.sp)
+length(G.boj)
+#Evaluating S&P during non-recession years;
+  
+  # Histogram and Density Curve of S&P During Non-Recession Years;
+truehist(G.sp,col="skyblue3",ylab="Counts",xlab="Values",main="S&P 500 During Non-Recession Years")
+lines(density(G.sp),lwd=2,col="red3")
+legend(1,0.4,  c("Histogram", "Density"),fill=c("skyblue3","red3"),cex=1)
+length(G.sp)
+length(sp.ac)
+  #Evaluating Minimum AIC;
+fw <- fitdist(G.sp, "weibull")
+summary(fw) #Aic = 10322
+fln <- fitdist(G.sp, "lnorm")
+summary(fln) #10264
+fnorm<-fitdist(G.sp, "norm")
+summary(fnorm) 11208
+fg<-fitdist(G.sp, "gamma")
+#^fail to fit gamma
+
+
+#Based off AIC values Log normal and weibull distribution will be graphically evaluated; 
+par(mfrow = c(2, 2))
+plot.legend <- c("Weibull", "lognormal")
+denscomp(list(fw, fln), legendtext = plot.legend)
+qqcomp(list(fw, fln), legendtext = plot.legend)
+cdfcomp(list(fw, fln), legendtext = plot.legend)
+ppcomp(list(fw, fln), legendtext = plot.legend)
+
+# Evaluating Three month TB during non-recession years;
+  #Three Month Tbill Histogram and Density Curve during Non_Recession Years;
+truehist(G.tb,col="skyblue3",ylab="Counts",xlab="Values",main="3 Month Tbill During Non-Recession Years")
+lines(density(G.tb),lwd=2,col="red3")
+legend(9,0.18,  c("Histogram", "Density"),fill=c("skyblue3","red3"),cex=1)
+
+  #Evaluating Minimum AIC;
+fw <- fitdist(G.tb, "weibull")
+summary(fw) 
+fln <- fitdist(G.tb, "lnorm")
+summary(fln) 
+fnorm<-fitdist(G.tb, "norm")
+summary(fnorm) 
+fg<-fitdist(G.tb, "gamma")
+funif<-fitdist(G.tb, "unif")
+#Can only fit unif and normal due to negative values;
+
+
+#Due to negative values Normal and Unifor Distributions will be Graphically evaluated; 
+par(mfrow = c(2, 2))
+plot.legend <- c("Normal", "Uniform")
+denscomp(list(fnorm, funif), legendtext = plot.legend)
+qqcomp(list(fnorm, funif), legendtext = plot.legend)
+cdfcomp(list(fnorm, funif), legendtext = plot.legend)
+ppcomp(list(fnorm, funif), legendtext = plot.legend)
+
+#Evaluating TBill Yield Spread during non-recession years;
+
+  #Histogram and Density Curve of Tbill Yield Spread during Non-Recession Years;
+truehist(G.yld,col="skyblue3",ylab="Counts",xlab="Values",main="Treasury Bill Yield Spread During Non-Recession Years")
+lines(density(G.yld),lwd=2,col="red3")
+legend(-3,0.35,  c("Histogram", "Density"),fill=c("skyblue3","red3"),cex=1)
+
+  #Evaluating Minimum AIC;
+fw <- fitdist(G.yld, "weibull")
+summary(fw) 
+fln <- fitdist(G.yld, "lnorm")
+summary(fln) 
+fnorm<-fitdist(G.yld, "norm")
+summary(fnorm) 
+fg<-fitdist(G.yld, "gamma")
+funif<-fitdist(G.yld, "unif")
+#Can only fit unif and normal due to negative values;
+
+
+  #Due to negative values Normal and Uniform Distributions will be Graphically evaluated; 
+par(mfrow = c(2, 2))
+plot.legend <- c("Normal", "Uniform")
+denscomp(list(fnorm, funif), legendtext = plot.legend)
+qqcomp(list(fnorm, funif), legendtext = plot.legend)
+cdfcomp(list(fnorm, funif), legendtext = plot.legend)
+ppcomp(list(fnorm, funif), legendtext = plot.legend)
+
+
+#Evaluating BOJ Interest Rates during non-recession years;
+
+  #Histogram and density Curve of BOJ IR during Non-Reccession Years;
+truehist(G.boj,col="skyblue3",ylab="Counts",xlab="Values",main="BOJ IR During Non-Recession Years")
+lines(density(thm.tb),lwd=2,col="red3")
+legend(7,0.3,  c("Histogram", "Density"),fill=c("skyblue3","red3"),cex=1)
+
+  #Evaluating Minimum AIC;
+fw <- fitdist(G.boj, "weibull")
+summary(fw) #4525
+fln <- fitdist(G.boj, "lnorm")
+summary(fln) #5053.067
+fnorm<-fitdist(G.boj, "norm")
+summary(fnorm) #4395.3
+fg<-fitdist(G.boj, "gamma")
+summary(fg)#4621.38
+
+  #Based off AIC values Normal and Gamma Distributions will be Graphically evaluated; 
+par(mfrow = c(2, 2))
+plot.legend <- c("Normal", "Gamma")
+denscomp(list(fnorm, fg), legendtext = plot.legend)
+qqcomp(list(fnorm, fg), legendtext = plot.legend)
+cdfcomp(list(fnorm, fg), legendtext = plot.legend)
+ppcomp(list(fnorm, fg), legendtext = plot.legend)
+
+
+
+
+# KS.Testing;
+#h0=data follow the same distribution
+
+#S&P Ks.testing
+ks.test(sp.ac,rec.SP)
+ks.test(sp.ac, G.sp) 
+ks.test(G.sp,rec.SP) 
+
+
+
+#Three Month Tbill KS Testing
+ks.test(thm.tb,rec.3tb)
+ks.test(thm.tb,G.tb) 
+ks.test(G.tb,rec.3tb) 
+
+#Tbill Yield Spread KS Testing
+ks.test(yield,yld.rec)
+ks.test(yield,G.yld)
+ks.test(G.yld,yld.rec)
+
+#BOJ IR KS Testing;
+ks.test(boj.val,rec.BOJ)
+#p-value = 4.327e-06, reject h0
+ks.test(boj.val,G.boj)
+ks.test(rec.BOJ,G.boj)
